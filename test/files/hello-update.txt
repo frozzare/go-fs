@@ -1,2 +1,2 @@
-Hello, read!
+Hello, world!
 Hello, update!

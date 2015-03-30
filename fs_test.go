@@ -19,7 +19,7 @@ func TestCopy(t *testing.T) {
 		panic(err)
 	}
 
-	assert.Equal(t, "Hello, read!\n", content)
+	assert.Equal(t, "Hello, world!\n", content)
 }
 
 func TestDelete(t *testing.T) {
@@ -77,7 +77,7 @@ func TestRead(t *testing.T) {
 		panic(err)
 	}
 
-	assert.Equal(t, "Hello, read!\n", content)
+	assert.Equal(t, "Hello, world!\n", content)
 
 	content, err = Read("test/files/error")
 
@@ -100,7 +100,7 @@ func TestUpdate(t *testing.T) {
 
 	content, err := Read("test/files/hello-update.txt")
 
-	assert.Equal(t, "Hello, read!\nHello, update!", content)
+	assert.Equal(t, "Hello, world!\nHello, update!", content)
 	assert.Equal(t, nil, err)
 }
 
