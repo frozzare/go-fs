@@ -10,11 +10,6 @@ import (
 	"strings"
 )
 
-// Directory struct contains the path
-type Directory struct {
-	Path string
-}
-
 // ContentItem is used for list of contents
 type ContentItem struct {
 	Name string
@@ -23,21 +18,31 @@ type ContentItem struct {
 }
 
 // Get the real path of the file or directory
-func (d *Directory) realPath(path string) string {
+func realPath(path string) string {
+	if string(path[0]) == "/" {
+		return path
+	}
+
 	if string(path[0]) != "/" {
 		path = "/" + path
 	}
 
-	if strings.Contains(path, d.Path) {
+	current, err := os.Getwd()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if strings.Contains(path, current) {
 		return path
 	}
 
-	return d.Path + path
+	return current + path
 }
 
 // Copy will return true if success otherwise a error
-func (d *Directory) Copy(src, dest string) error {
-	srcFile, err := os.Open(d.realPath(src))
+func Copy(src, dest string) error {
+	srcFile, err := os.Open(realPath(src))
 
 	if err != nil {
 		return err
@@ -55,7 +60,7 @@ func (d *Directory) Copy(src, dest string) error {
 		return fmt.Errorf("%s is not a regular file", src)
 	}
 
-	destFile, err := os.Create(d.realPath(dest))
+	destFile, err := os.Create(realPath(dest))
 
 	if err != nil {
 		return err
@@ -71,14 +76,14 @@ func (d *Directory) Copy(src, dest string) error {
 }
 
 // CreateDir will create a directory
-func (d *Directory) CreateDir(dir string, args ...interface{}) error {
+func CreateDir(dir string, args ...interface{}) error {
 	permission := uint32(0644)
 
 	if len(args) > 0 {
 		permission = args[0].(uint32)
 	}
 
-	dir = d.realPath(dir)
+	dir = realPath(dir)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		return nil
@@ -88,13 +93,13 @@ func (d *Directory) CreateDir(dir string, args ...interface{}) error {
 }
 
 // Delete will delete the file or directory
-func (d *Directory) Delete(path string) error {
-	return os.Remove(d.realPath(path))
+func Delete(path string) error {
+	return os.Remove(realPath(path))
 }
 
 // GetFileExtension will return the file extension
-func (d *Directory) GetFileExtension(file string) string {
-	ext := filepath.Ext(d.realPath(file))
+func GetFileExtension(file string) string {
+	ext := filepath.Ext(realPath(file))
 
 	if ext == "" {
 		return ""
@@ -104,8 +109,8 @@ func (d *Directory) GetFileExtension(file string) string {
 }
 
 // GetSize returns the size of the file or error
-func (d *Directory) GetSize(file string) (int64, error) {
-	stat, err := os.Stat(d.realPath(file))
+func GetSize(file string) (int64, error) {
+	stat, err := os.Stat(realPath(file))
 
 	if err != nil {
 		return 0, err
@@ -114,14 +119,23 @@ func (d *Directory) GetSize(file string) (int64, error) {
 	return stat.Size(), nil
 }
 
-// Has returns true or false if the file exists in the directory or not.
-func (d *Directory) Has(file string) bool {
-	_, err := os.Stat(d.realPath(file))
-	return err == nil
+// Exists returns nil when file exists and error when file does not exist.
+func Exists(path string) error {
+	_, err := os.Stat(realPath(path))
+
+	if err == nil {
+		return nil
+	}
+
+	if os.IsNotExist(err) {
+		return err
+	}
+
+	return nil
 }
 
 // ListContents will return a list of contents (files and directories)
-func (d *Directory) ListContents(args ...interface{}) []ContentItem {
+func ListContents(args ...interface{}) []ContentItem {
 	dir := "./*"
 	path := "/"
 	recursive := false
@@ -133,7 +147,7 @@ func (d *Directory) ListContents(args ...interface{}) []ContentItem {
 
 	if len(args) > 0 {
 		if len(args[0].(string)) > 0 {
-			dir = d.realPath(args[0].(string)) + "/*"
+			dir = realPath(args[0].(string)) + "/*"
 		}
 
 		recursive = len(args) > 1 && args[1] != nil
@@ -143,7 +157,6 @@ func (d *Directory) ListContents(args ...interface{}) []ContentItem {
 
 	if recursive {
 		dir = dir[0 : len(dir)-2]
-		fmt.Println(dir)
 		err = filepath.Walk(dir, func(path string, f os.FileInfo, err error) error {
 			if f.Name() == "." || f.Name() == ".." {
 				return nil
@@ -182,7 +195,7 @@ func (d *Directory) ListContents(args ...interface{}) []ContentItem {
 
 		item := ContentItem{
 			Name: fi.Name(),
-			Path: d.realPath(path + s),
+			Path: realPath(path + s),
 			Type: pt,
 		}
 
@@ -192,18 +205,15 @@ func (d *Directory) ListContents(args ...interface{}) []ContentItem {
 	return result
 }
 
-// Open will return a new instance of Directory struct
-func Open(path string) *Directory {
-	return &Directory{path}
-}
-
 // Read will return the content of the file or error
-func (d *Directory) Read(file string) (string, error) {
-	if d.Has(file) == false {
-		return "", fmt.Errorf("The file %s doesn't exists", file)
+func Read(file string) (string, error) {
+	err := Exists(file)
+
+	if err != nil {
+		return "", err
 	}
 
-	content, err := ioutil.ReadFile(d.realPath(file))
+	content, err := ioutil.ReadFile(realPath(file))
 
 	if err != nil {
 		return "", err
@@ -213,7 +223,7 @@ func (d *Directory) Read(file string) (string, error) {
 }
 
 // Update will append text to file
-func (d *Directory) Update(file, content string, args ...interface{}) error {
+func Update(file, content string, args ...interface{}) error {
 	permission := uint32(0644)
 
 	if len(args) > 0 {
@@ -234,14 +244,14 @@ func (d *Directory) Update(file, content string, args ...interface{}) error {
 }
 
 // Write will write text to file
-func (d *Directory) Write(file, content string, args ...interface{}) error {
+func Write(file, content string, args ...interface{}) error {
 	permission := uint32(0644)
 
 	if len(args) > 0 {
 		permission = args[0].(uint32)
 	}
 
-	err := ioutil.WriteFile(d.realPath(file), []byte(content), os.FileMode(permission))
+	err := ioutil.WriteFile(realPath(file), []byte(content), os.FileMode(permission))
 
 	if err != nil {
 		return err

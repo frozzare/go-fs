@@ -1,6 +1,9 @@
 # go-github-markdown [![Build Status](https://travis-ci.org/frozzare/go-fs.svg?branch=master)](https://travis-ci.org/frozzare/go-fs)
 
- Work easy with files on the local filesystem
+ Work easy with files on the local filesystem.
+ Current path will be appended to the given path if the path don't start with `/`.
+
+ Not tested on Windows.
 
  View the [docs](http://godoc.org/github.com/frozzare/go-fs).
 
