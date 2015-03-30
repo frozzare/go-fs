@@ -25,13 +25,13 @@ import (
 )
 
 func main() {
-    err := fs.Write("files/hello.txt", "Hello, world!")
+    err := fs.Write("test/files/hello.txt", "Hello, world!")
 
     if err != nil {
         log.Fatal(err)
     }
 
-    content, err := fs.Read("files/hello.txt")
+    content, err := fs.Read("test/files/hello.txt")
 
     if err != nil {
         log.Fatal(err)
