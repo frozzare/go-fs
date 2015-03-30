@@ -26,20 +26,20 @@ import (
 )
 
 func main() {
-    err := fs.Write("test/files/hello.txt", "Hello, world!")
+    err := fs.Write("test/files/example.txt", "Hello, world!")
 
     if err != nil {
         log.Fatal(err)
     }
 
-    content, err := fs.Read("test/files/hello.txt")
+    content, err := fs.Read("test/files/example.txt")
 
     if err != nil {
         log.Fatal(err)
     }
 
     fmt.Println(content)
-    // Hello, world!\n
+    // Hello, world!
 }
 ```
 
