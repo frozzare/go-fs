@@ -120,3 +120,23 @@ func TestWrite(t *testing.T) {
 	assert.Equal(t, "Hello, write!\n", content)
 	assert.Equal(t, nil, err)
 }
+
+func TestWriteJSON(t *testing.T) {
+	type Hello struct {
+		Name string
+	}
+
+	p1 := Hello{"Fredrik"}
+
+	if err := WriteJSON("test/files/hello.json", p1); err != nil {
+		panic(err)
+	}
+
+	var p2 *Hello
+
+	if err := ReadJSON("test/files/hello.json", &p2); err != nil {
+		panic(err)
+	}
+
+	assert.Equal(t, "Fredrik", p2.Name)
+}

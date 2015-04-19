@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -41,6 +42,9 @@ func realPath(path string) string {
 }
 
 // Copy will return true if success otherwise a error
+//
+// - `src` the source file to copy from
+// - `dest` the target file to copy to.
 func Copy(src, dest string) error {
 	srcFile, err := os.Open(realPath(src))
 
@@ -76,6 +80,9 @@ func Copy(src, dest string) error {
 }
 
 // CreateDir will create a directory
+//
+// - `dir` the directory path to create
+// - `args` file permission uint32 (optional)
 func CreateDir(dir string, args ...interface{}) error {
 	permission := uint32(0644)
 
@@ -93,11 +100,15 @@ func CreateDir(dir string, args ...interface{}) error {
 }
 
 // Delete will delete the file or directory
+//
+// - `path` the path to delete
 func Delete(path string) error {
 	return os.Remove(realPath(path))
 }
 
 // GetFileExtension will return the file extension
+//
+// - `file` the file path to get file extension from
 func GetFileExtension(file string) string {
 	ext := filepath.Ext(realPath(file))
 
@@ -109,6 +120,8 @@ func GetFileExtension(file string) string {
 }
 
 // GetSize returns the size of the file or error
+//
+// - `file` the file path to get file size from
 func GetSize(file string) (int64, error) {
 	stat, err := os.Stat(realPath(file))
 
@@ -120,6 +133,8 @@ func GetSize(file string) (int64, error) {
 }
 
 // Exists returns nil when file exists and error when file does not exist.
+//
+// - `path` the path to check if exists or not
 func Exists(path string) error {
 	_, err := os.Stat(realPath(path))
 
@@ -135,6 +150,10 @@ func Exists(path string) error {
 }
 
 // ListContents will return a list of contents (files and directories)
+//
+// Args:
+// - path to directory that should be listed (optional, default "./*")
+// - recursive bool (optional, default false)
 func ListContents(args ...interface{}) []ContentItem {
 	dir := "./*"
 	path := "/"
@@ -206,6 +225,8 @@ func ListContents(args ...interface{}) []ContentItem {
 }
 
 // Read will return the content of the file or error
+//
+// - `file` is the file path to read from
 func Read(file string) (string, error) {
 	err := Exists(file)
 
@@ -222,7 +243,35 @@ func Read(file string) (string, error) {
 	return string(content), nil
 }
 
+// ReadJSON into a interface{} of your object
+//
+// - `file` the file path to read JSON from
+// - `as` the interface to read to
+func ReadJSON(file string, as interface{}) error {
+	err := Exists(file)
+
+	if err != nil {
+		return err
+	}
+
+	content, err := ioutil.ReadFile(realPath(file))
+
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(content, &as); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Update will append text to file
+//
+// - `file` the file path to append content to
+// - `body` the string to write
+// - `args` fiel permission uint32 (optional)
 func Update(file, content string, args ...interface{}) error {
 	permission := uint32(0644)
 
@@ -244,6 +293,10 @@ func Update(file, content string, args ...interface{}) error {
 }
 
 // Write will write text to file
+//
+// - `file` is the file path to write to
+// - `body` is the string to write
+// - `args` fiel permission uint32 (optional)
 func Write(file, content string, args ...interface{}) error {
 	permission := uint32(0644)
 
@@ -258,4 +311,19 @@ func Write(file, content string, args ...interface{}) error {
 	}
 
 	return nil
+}
+
+// WriteJSON will write JSON of the `content` interface.
+//
+// - `file` is the file path to write to
+// - `content` is the interface of your JSON
+// - `args` file permission uint32 (optional)
+func WriteJSON(file string, content interface{}, args ...interface{}) error {
+	body, err := json.Marshal(content)
+
+	if err != nil {
+		return err
+	}
+
+	return Write(file, string(body), args...)
 }
