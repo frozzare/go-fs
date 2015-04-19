@@ -1,4 +1,4 @@
-# go-github-markdown [![Build Status](https://travis-ci.org/frozzare/go-fs.svg?branch=master)](https://travis-ci.org/frozzare/go-fs)
+# go-fs [![Build Status](https://travis-ci.org/frozzare/go-fs.svg?branch=master)](https://travis-ci.org/frozzare/go-fs)
 
  Work easy with files and directories on the local filesystem.
 
