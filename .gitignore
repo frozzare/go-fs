@@ -1,2 +1,2 @@
-files/hello-*.txt
-files/*.json
+test/files/hello-*.txt
+test/files/*.json

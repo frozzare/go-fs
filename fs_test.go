@@ -3,7 +3,7 @@ package fs
 import (
 	"testing"
 
-	"github.com/bmizerany/assert"
+	"github.com/frozzare/go-assert"
 )
 
 func TestCopy(t *testing.T) {

@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -19,13 +21,20 @@ type ContentItem struct {
 }
 
 // Get the real path of the file or directory
-func realPath(path string) string {
-	if string(path[0]) == "/" {
-		return path
+func realPath(file string) string {
+	if string(file[0]) == "/" {
+		return file
 	}
 
-	if string(path[0]) != "/" {
-		path = "/" + path
+	if string(file[0]) != "/" {
+		file = "/" + file
+	}
+
+	_, filename, _, _ := runtime.Caller(3)
+	dir := path.Join(path.Dir(filename), file)
+
+	if _, err := os.Stat(dir); err == nil && strings.HasSuffix(dir, file) {
+		return dir
 	}
 
 	current, err := os.Getwd()
@@ -34,11 +43,13 @@ func realPath(path string) string {
 		log.Fatal(err)
 	}
 
-	if strings.Contains(path, current) {
-		return path
+	dir = file
+
+	if strings.HasSuffix(dir, current) {
+		return dir
 	}
 
-	return current + path
+	return current + dir
 }
 
 // Copy will return true if success otherwise a error
