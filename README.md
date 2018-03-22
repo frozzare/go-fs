@@ -22,7 +22,7 @@ package main
 import (
     "log"
 
-	"github.com/frozzare/go-fs"
+    "github.com/frozzare/go-fs"
 )
 
 func main() {
